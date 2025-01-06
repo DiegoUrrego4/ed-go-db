@@ -2,7 +2,10 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
+	"github.com/joho/godotenv"
 	"log"
+	"os"
 	"sync"
 
 	_ "github.com/lib/pq"
@@ -16,7 +19,19 @@ var (
 func NewPostgresDB() {
 	once.Do(func() { // esto se ejecuta una sola vez
 		var err error
-		db, err = sql.Open("postgres", "postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full")
+
+		err = godotenv.Load()
+		if err != nil {
+			log.Fatalf("Can't load environment variables: %v", err)
+		}
+
+		dbUser := os.Getenv("POSTGRES_USER")
+		dbPass := os.Getenv("POSTGRES_PASS")
+		dbName := os.Getenv("POSTGRES_DB")
+
+		connStr := fmt.Sprintf("postgres://%s:%s@localhost/%s?sslmode=disable", dbUser, dbPass, dbName)
+
+		db, err = sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatalf("Can't open db: %v", err)
 		}
@@ -25,5 +40,12 @@ func NewPostgresDB() {
 		if err = db.Ping(); err != nil {
 			log.Fatalf("Can't do ping: %v", err)
 		}
+
+		fmt.Println("Conectado a postgres")
 	})
+}
+
+// Pool returns an unique instance of db
+func Pool() *sql.DB {
+	return db
 }
