@@ -35,7 +35,6 @@ func NewPostgresDB() {
 		if err != nil {
 			log.Fatalf("Can't open db: %v", err)
 		}
-		defer db.Close()
 
 		if err = db.Ping(); err != nil {
 			log.Fatalf("Can't do ping: %v", err)

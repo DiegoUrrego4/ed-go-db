@@ -15,9 +15,24 @@ type Model struct {
 type Models []*Model
 
 type Storage interface {
-	Create(model *Model) error
-	Update(model *Model) error
-	GetAll() (Models, error)
-	GetByID(id uint) (*Model, error)
-	Delete(id uint) error
+	Migrate() error
+	//Create(model *Model) error
+	//Update(model *Model) error
+	//GetAll() (Models, error)
+	//GetByID(id uint) (*Model, error)
+	//Delete(id uint) error
+}
+
+// Service product service
+type Service struct {
+	storage Storage
+}
+
+func NewService(s Storage) *Service {
+	return &Service{s}
+}
+
+// Migrate is used to migrate product
+func (s *Service) Migrate() error {
+	return s.storage.Migrate()
 }
