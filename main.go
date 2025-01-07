@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/DiegoUrrego4/go-db/pkg/product"
 	"github.com/DiegoUrrego4/go-db/storage"
 	"log"
@@ -15,17 +14,16 @@ func main() {
 	serviceProduct := product.NewService(storageProduct)
 
 	//m := &product.Model{
-	//	Name:        "Curso de BBDD con Go",
-	//	Price:       70,
-	//	Observation: "On fire",
+	//	ID:   19,
+	//	Name: "Curso de testing",
+	//	//Observation: "Este curso tiene otro nivel.",
+	//	Price: 150,
 	//}
 
-	ms, err := serviceProduct.GetAll()
+	err := serviceProduct.Delete(1)
 	if err != nil {
-		log.Fatalf("product.GetAll: %v", err)
+		log.Fatalf("product.Delete: %v", err)
 	}
-
-	fmt.Println(ms)
 
 	//storageInvoiceHeader := storage.NewPsqlInvoiceHeader(storage.Pool())
 	//serviceInvoiceHeader := invoiceheader.NewService(storageInvoiceHeader)

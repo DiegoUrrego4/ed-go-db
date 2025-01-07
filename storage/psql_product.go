@@ -6,6 +6,10 @@ import (
 	"github.com/DiegoUrrego4/go-db/pkg/product"
 )
 
+type scanner interface {
+	Scan(dest ...any) error
+}
+
 const (
 	psqlMigrateProduct = `CREATE TABLE IF NOT EXISTS products(
     id SERIAL NOT NULL,
@@ -19,7 +23,10 @@ const (
 	psqlCreateProduct = `INSERT INTO products(name, observations, price, created_at) 
 VALUES ($1, $2, $3, $4) RETURNING id
 `
-	psqlGetAllProducts = `SELECT id, name, observations, price, created_at, updated_at FROM products`
+	psqlGetAllProducts = `SELECT * FROM products`
+	psqlGetProductByID = psqlGetAllProducts + " WHERE id=$1"
+	psqlUpdateProduct  = `UPDATE products SET name= $1, observations= $2, price= $3, updated_at = $4 WHERE id= $5`
+	psqlDeleteProduct  = `DELETE from products WHERE id= $1`
 )
 
 // PsqlProduct used to work with postgres - product
@@ -86,24 +93,10 @@ func (p *PsqlProduct) GetAll() (product.Models, error) {
 
 	ms := make(product.Models, 0)
 	for rows.Next() {
-		m := &product.Model{}
-		observationNull := sql.NullString{}
-		updatedAtNull := sql.NullTime{}
-
-		err := rows.Scan(
-			&m.ID,
-			&m.Name,
-			&observationNull,
-			&m.Price,
-			&m.CreatedAt,
-			&updatedAtNull,
-		)
+		m, err := scanRowProduct(rows)
 		if err != nil {
 			return nil, err
 		}
-
-		m.Observation = observationNull.String
-		m.UpdatedAt = updatedAtNull.Time
 		ms = append(ms, m)
 	}
 
@@ -112,4 +105,81 @@ func (p *PsqlProduct) GetAll() (product.Models, error) {
 	}
 
 	return ms, nil
+}
+
+// GetByID implements the interface product.storage
+func (p *PsqlProduct) GetByID(id uint) (*product.Model, error) {
+	stmt, err := p.db.Prepare(psqlGetProductByID)
+	if err != nil {
+		return &product.Model{}, err
+	}
+	defer stmt.Close()
+
+	return scanRowProduct(stmt.QueryRow(id))
+}
+
+// Update implements the interface product.storage
+func (p *PsqlProduct) Update(m *product.Model) error {
+	stmt, err := p.db.Prepare(psqlUpdateProduct)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(m.Name, stringToNull(m.Observation), m.Price, timeToNull(m.UpdatedAt), m.ID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no existe el producto con id: %d", m.ID)
+	}
+
+	fmt.Println("The register was updated successfully!")
+	return nil
+}
+
+func (p *PsqlProduct) Delete(id uint) error {
+	stmt, err := p.db.Prepare(psqlDeleteProduct)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Product deleted successfully!")
+	return nil
+}
+
+// scanRowProduct helper function to reuse the logic
+func scanRowProduct(s scanner) (*product.Model, error) {
+	m := &product.Model{}
+	observationNull := sql.NullString{}
+	updatedAtNull := sql.NullTime{}
+
+	err := s.Scan(
+		&m.ID,
+		&m.Name,
+		&observationNull,
+		&m.Price,
+		&m.CreatedAt,
+		&updatedAtNull,
+	)
+	if err != nil {
+		return &product.Model{}, err
+	}
+
+	m.Observation = observationNull.String
+	m.UpdatedAt = updatedAtNull.Time
+
+	return m, nil
 }
