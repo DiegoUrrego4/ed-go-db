@@ -14,17 +14,18 @@ func main() {
 	storageProduct := storage.NewPsqlProduct(storage.Pool())
 	serviceProduct := product.NewService(storageProduct)
 
-	m := &product.Model{
-		Name:        "Curso de BBDD con Go",
-		Price:       70,
-		Observation: "On fire",
+	//m := &product.Model{
+	//	Name:        "Curso de BBDD con Go",
+	//	Price:       70,
+	//	Observation: "On fire",
+	//}
+
+	ms, err := serviceProduct.GetAll()
+	if err != nil {
+		log.Fatalf("product.GetAll: %v", err)
 	}
 
-	if err := serviceProduct.Create(m); err != nil {
-		log.Fatalf("product.Create: %v", err)
-	}
-
-	fmt.Printf("%+v\n", m)
+	fmt.Println(ms)
 
 	//storageInvoiceHeader := storage.NewPsqlInvoiceHeader(storage.Pool())
 	//serviceInvoiceHeader := invoiceheader.NewService(storageInvoiceHeader)
