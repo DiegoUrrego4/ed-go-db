@@ -1,6 +1,9 @@
 package invoiceitem
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 // Model of invoiceItem
 type Model struct {
@@ -11,8 +14,11 @@ type Model struct {
 	UpdatedAt       time.Time
 }
 
+type Models []*Model
+
 type Storage interface {
 	Migrate() error
+	CreateTx(tx *sql.Tx, headerID uint, invoiceItemModel Models) error
 }
 
 // Service invoice item service
