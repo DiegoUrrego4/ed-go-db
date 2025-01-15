@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
@@ -42,6 +43,33 @@ func NewPostgresDB() {
 		}
 
 		fmt.Println("Conectado a postgres")
+	})
+}
+
+func NewMySqlDB() {
+	once.Do(func() { // esto se ejecuta una sola vez
+		var err error
+
+		err = godotenv.Load()
+		if err != nil {
+			log.Fatalf("Can't load environment variables: %v", err)
+		}
+
+		dbPass := os.Getenv("MYSQL_PASS")
+		dbName := os.Getenv("MYSQL_DB")
+
+		connStr := fmt.Sprintf("root:%s@tcp(localhost:3306)/%s", dbPass, dbName)
+
+		db, err = sql.Open("mysql", connStr)
+		if err != nil {
+			log.Fatalf("Can't open db: %v", err)
+		}
+
+		if err = db.Ping(); err != nil {
+			log.Fatalf("Can't do ping: %v", err)
+		}
+
+		fmt.Println("Conectado a Mysql")
 	})
 }
 

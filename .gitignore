@@ -1,4 +1,5 @@
 .idea/
 postgres/
+mysql/
 
 .env

@@ -1,7 +1,7 @@
 services:
-  db:
+  postgres-db:
     image: postgres:15.1
-    container_name: edteam-postgres-db
+    container_name: edt-postgres-db
     restart: always
     ports:
       - "5432:5432"
@@ -11,3 +11,15 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgres:/var/lib/postgresql/data
+
+  mysql-db:
+    image: mysql:9.1.0
+    container_name: edt-mtsql-db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+      MYSQL_DATABASE: ${MYSQL_DB}
+    volumes:
+      - ./mysql:/var/lib/mysql
