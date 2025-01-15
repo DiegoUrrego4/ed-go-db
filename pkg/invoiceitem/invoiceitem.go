@@ -1,7 +1,6 @@
 package invoiceitem
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -18,7 +17,7 @@ type Models []*Model
 
 type Storage interface {
 	Migrate() error
-	CreateTx(tx *sql.Tx, headerID uint, invoiceItemModel Models) error
+	//CreateTx(tx *sql.Tx, headerID uint, invoiceItemModel Models) error
 }
 
 // Service invoice item service

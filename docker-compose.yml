@@ -14,7 +14,7 @@ services:
 
   mysql-db:
     image: mysql:9.1.0
-    container_name: edt-mtsql-db
+    container_name: edt-mysql-db
     restart: always
     ports:
       - "3306:3306"

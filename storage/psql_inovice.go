@@ -28,15 +28,15 @@ func (p *PsqlInvoice) Create(m *invoice.Model) error {
 		return err
 	}
 
-	if err := p.storageHeader.CreateTx(tx, m.Header); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := p.storageItems.CreateTx(tx, m.Header.ID, m.Items); err != nil {
-		tx.Rollback()
-		return err
-	}
+	//if err := p.storageHeader.CreateTx(tx, m.Header); err != nil {
+	//	tx.Rollback()
+	//	return err
+	//}
+	//
+	//if err := p.storageItems.CreateTx(tx, m.Header.ID, m.Items); err != nil {
+	//	tx.Rollback()
+	//	return err
+	//}
 
 	return tx.Commit()
 }

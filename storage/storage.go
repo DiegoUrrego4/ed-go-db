@@ -3,6 +3,7 @@ package storage
 import (
 	"database/sql"
 	"fmt"
+	"github.com/DiegoUrrego4/go-db/pkg/product"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -18,7 +19,24 @@ var (
 	once sync.Once // Esta estructura es para crear el singleton
 )
 
-func NewPostgresDB() {
+type Driver string
+
+const (
+	MySql    Driver = "MYSQL"
+	Postgres Driver = "POSTGRES"
+)
+
+// New create the connection with DB
+func New(d Driver) {
+	switch d {
+	case MySql:
+		newMySqlDB()
+	case Postgres:
+		newPostgresDB()
+	}
+}
+
+func newPostgresDB() {
 	once.Do(func() { // esto se ejecuta una sola vez
 		var err error
 
@@ -46,7 +64,7 @@ func NewPostgresDB() {
 	})
 }
 
-func NewMySqlDB() {
+func newMySqlDB() {
 	once.Do(func() { // esto se ejecuta una sola vez
 		var err error
 
@@ -98,4 +116,16 @@ func timeToNull(t time.Time) sql.NullTime {
 	}
 
 	return null
+}
+
+// DAOProduct factory of product.Storage
+func DAOProduct(driver Driver) (product.Storage, error) {
+	switch driver {
+	case Postgres:
+		return newPsqlProduct(db), nil
+	case MySql:
+		return newMySqlProduct(db), nil
+	default:
+		return nil, fmt.Errorf("driver not implemented")
+	}
 }
